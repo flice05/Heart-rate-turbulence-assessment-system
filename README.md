@@ -1,1 +1,1 @@
-# mtuci-pyqt
+# mtuci-project
