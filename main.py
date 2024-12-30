@@ -76,6 +76,13 @@ def find_s_peaks_indexes(ecg, r_peaks):
 
 
 def remove_incorrect_qrs_complex(_q_peaks, _r_peaks, _s_peaks):
+    """
+    :param _q_peaks: array of Q peaks indexes (including incorrect values)
+    :param _r_peaks: array of R peaks indexes (including incorrect values)
+    :param _s_peaks: array of S peaks indexes (including incorrect values)
+
+    :return: arrays with correct Q, R, S peaks indexes
+    """
     # remove NaN values
     for i in range(0, len(_q_peaks)):
         if math.isnan(_q_peaks[i]):
@@ -104,11 +111,16 @@ def remove_incorrect_qrs_complex(_q_peaks, _r_peaks, _s_peaks):
     return q_peaks_new, r_peaks_new, s_peaks_new
 
 
-def find_qrs_duration(q_peaks_, s_peaks_, fs):
+def find_qrs_duration(q_peak: int, s_peak: int, fs: int):
+    """Find duration of QRS complex
 
-    duration = list() # QRS complexes duration array
-    for q, s in zip(q_peaks_, s_peaks_):
-        duration.append((s - q) / fs)
+    :param q_peak: Q peak index
+    :param s_peak: S peak index
+    :param fs: Sampling rate
+
+    :return: duration of QRS complex in seconds
+    """
+    duration = (s_peak - q_peak) / fs # QRS complex duration 
 
     return duration
 
@@ -157,7 +169,7 @@ print(f"r = {r_peaks_indexes}")
 print(f"Средний rr интервал: {np.mean(rr_intervals) * 0.7}")
 
 
-def find_extrasystols():
+def find_extrasystols(q_peaks_indexes, r_peaks_indexes, s_peak_indexes):
     # count_extrasystols = 0
     # potential_extrasystols_peaks_indexes = []
     # for i in range(len(rr_intervals)):
