@@ -13,68 +13,6 @@ low_freq = 5
 high_freq = 15
 
 
-# def filter_ecg(ecg_signal, fs):
-#     # Фильтр Баттерворта
-#     b, a = signal.butter(5, [low_freq, high_freq], fs=fs, btype='bandpass')
-#     filtered_ecg = signal.lfilter(b, a, ecg_signal)
-#     return filtered_ecg
-#
-#
-# def find_r_peaks_indexes(filtered_signal, fs):
-#     diff_ecg = np.ediff1d(filtered_ecg)
-#
-#     squared_diff = diff_ecg ** 2
-#
-#     window_size = int(fs * 0.08)
-#     integrated_ecg = np.convolve(squared_diff, np.ones(window_size), mode='same') / window_size
-#
-#     noise_level = np.median(integrated_ecg)
-#     threshold_qrs = noise_level + 0.15 * np.max(integrated_ecg)
-#     r_peak_indices = find_peaks(integrated_ecg, height=threshold_qrs)[0]
-#
-#     return r_peak_indices
-
-
-# def butter_bandpass(lowcut, highcut, fs, order=5):
-#     nyq = 0.5 * fs
-#     low = lowcut / nyq
-#     high = highcut / nyq
-#     sos = signal.butter(order, [low, high], analog=False, btype='bandpass')
-#     return sos
-#
-#
-# def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
-#     sos = butter_bandpass(lowcut, highcut, fs, order=order)
-#     y = signal.sosfilt(sos, data)
-#     return y
-
-
-def find_q_peaks_indexes(ecg, r_peaks):
-    q_peaks = []
-    for i in r_peaks:
-        q_minn = i
-        for j in range(1, 6):
-            if ecg[i - j] < q_minn:
-                q_minn = i - j
-        q_peaks.append(q_minn)
-        print(f"Добавлен элемент {q_minn}    {i}")
-
-    return q_peaks
-
-
-def find_s_peaks_indexes(ecg, r_peaks):
-    s_peaks = []
-    for i in r_peaks:
-        s_minn = i
-        for j in range(1, 11):
-            if ecg[i + j] < s_minn:
-                s_minn = i + j
-        s_peaks.append(s_minn)
-        print(f"Добавлен элемент {s_minn}    {i}")
-
-    return s_peaks
-
-
 def remove_incorrect_qrs_complex(_q_peaks, _r_peaks, _s_peaks):
     """
     :param _q_peaks: array of Q peaks indexes (including incorrect values)
@@ -128,10 +66,7 @@ def find_qrs_duration(q_peak: int, s_peak: int, fs: int):
 
 ecg_data = np.loadtxt('Dataset/New100.TXT')
 sampling_rate = 100
-# filtered_ecg = filter_ecg(ecg_data, sampling_rate)
-# filtered_ecg = ecg_clean(ecg_data, sampling_rate, "neurokit")
-filtered_ecg = signal_filter(ecg_data, sampling_rate, low_freq, high_freq, "butterworth", 5)
-# r_peak_indexes = find_r_peaks_indexes(filtered_ecg, sampling_rate)
+filtered_ecg = nk.signal_filter(ecg_data, sampling_rate, low_freq, high_freq, "butterworth", 5)
 
 _, r_peaks_indexes_raw = nk.ecg_peaks(filtered_ecg, sampling_rate=sampling_rate)
 r_peaks_indexes_raw = r_peaks_indexes_raw["ECG_R_Peaks"][1:-1]
