@@ -1,4 +1,4 @@
-#include <GyverOLED.h>
+#include "Bitmaps.h"
 
 #ifndef Menu_h
 #define Menu_h
@@ -6,40 +6,40 @@
 class Menu
 {
   public:
+    bool isActive = true;
     Menu(GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oledRef) : oled(oledRef)
     {
     }
 
-    GetCurrentWidget()
+    DrawCurrentWidget()
     {      
       switch (currentPos) 
       {
         case 1:
             oled.clear();
             oled.home();
-            oled.print("Старт");
+            oled.setScale(5);
+            oled.print("21:05");
           break;
         case 2:
             oled.clear();
-            oled.home();
-            oled.print("ЭКГ");
+            oled.drawBitmap(1, 1, ecg_icon_128x64, 128, 64, BITMAP_NORMAL, BUF_ADD);
+            oled.setScale(1);
+            oled.setCursor(0, 7);
+            oled.print("      Запись ЭКГ          ");
           break;
         case 3:
             oled.clear();
-            oled.home();
-            oled.print("Дневник пациента");
+            oled.drawBitmap(1, 1, diary_icon_128x64, 128, 64, BITMAP_NORMAL, BUF_ADD);
+            oled.setScale(1);
+            oled.setCursor(0, 7);
+            oled.print("    Дневник пациента      ");
       }
 
     }
-    RunCurrentWidget()
+    byte GetCurrentWidgetID()
     {
-      switch (currentPos) 
-      {
-        case 2:
-            oled.clear();
-            oled.home();
-            oled.print("Поиск SD карты...");
-      }
+      return currentPos;
     }
     Right()
     {
@@ -51,7 +51,7 @@ class Menu
       {
         currentPos++;
       }
-      GetCurrentWidget();
+      DrawCurrentWidget();
     } 
     Left()
     {
@@ -63,7 +63,7 @@ class Menu
       {
         currentPos--;
       }
-      GetCurrentWidget();
+      DrawCurrentWidget();
     }
 
     Homepage()

@@ -3,6 +3,8 @@
 #include "SD.h"
 #include "Menu.h"
 #include "button.h"
+#include "ECGApp.h"
+#include "Bitmaps.h"
 
 #define leftKeyPin 2
 #define rightKeyPin 3
@@ -11,26 +13,33 @@
 button leftKey(leftKeyPin);
 button rightKey(rightKeyPin);
 button goKey(goKeyPin);
-
 GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> oled;
 File myFile;   
 Menu menu(oled);
-
-byte period = 1000 / 100; //1000 / v [Hz]
-int x0 = 0;
-int y0 = 0;
-int x = 0;
-int y = 0;
+ECGApp ecgApp(leftKey, rightKey, goKey, oled, myFile, menu);
 
 void setup()
 {
+  pinMode(SS, OUTPUT);
   Serial.begin(9600);
+
+  //Oled preview
   oled.init();
   oled.clear();
-  oled.print("start");
 
-  //just test some features bcz i dont change loop
-  while(1)
+  oled.drawBitmap(1, 1, loading_128x64, 128, 64, BITMAP_INVERT, BUF_ADD);
+
+  oled.setScale(1);
+  oled.setCursor(0, 7);
+  oled.print("      загрузка...         ");
+  delay(1800);
+  menu.DrawCurrentWidget();
+}
+
+void loop()
+{
+  //menu mode
+  if(menu.isActive)
   {
     if(leftKey.click())
     {
@@ -40,63 +49,26 @@ void setup()
     {
       menu.Right();
     }
-    if(goKey.click())
+    if(goKey.click())//exit menu
     {
-      menu.RunCurrentWidget();
-      break;
+      menu.isActive = false;
+      oled.clear();
     }
 
-  }
-
-  pinMode(8, INPUT); // Setup for leads off detection LO +
-  pinMode(9, INPUT); // Setup for leads off detection LO -
-  pinMode(SS, OUTPUT);
-
-  while (!SD.begin(SPI_HALF_SPEED, 7)) { Serial.println("initialization failed"); }
-  delay(3000);
- 
-   myFile = SD.open("a.txt", FILE_WRITE);
-   if (myFile) {
-      Serial.println("*start*");
-      myFile.print(String(1000 / period));
-      myFile.println(" Hz");
-      myFile.println("-------------------");
-      myFile.close();
-   }
-
-   else { Serial.println("error opening 1 txt"); }
- 
-   myFile = SD.open("a.txt", FILE_WRITE);
-}
-
-void loop()
-{
-  int data = analogRead(A0);
-  x0 = x;
-  x += 1;
-  y0 = y;
-  y = 63 - (data * 0.0625);
-  Serial.println(data);
-
-  if (myFile) {
-    myFile.println(String(data));
+    //then update all mini apps (background mode)
+    //....
   }
   else
   {
-    Serial.println("error opening 2 txt"); 
-    myFile.close();
+    //run current mini app (active mode)
+    switch(menu.GetCurrentWidgetID())
+    {
+      case 1:
+        break;
+      case 2:
+        //Run ECG app in active mode
+        ecgApp.ECGAppActive();
+        break;
+    }
   }
- 
-  //oled.dot(x, y);
-  oled.line(x0, y0, x, y);
-
-  if(x>=128)
-  {
-    x = 0;
-    oled.clear();
-    myFile.close();
-    myFile = SD.open("a.txt", FILE_WRITE);
-  }
-  
-  delay(period);
 }

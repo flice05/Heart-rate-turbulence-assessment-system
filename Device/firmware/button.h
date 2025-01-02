@@ -1,7 +1,7 @@
 class button {
   public:
     button (byte pin) {
-      _pin = pin;
+      _pin = pin; 
       pinMode(_pin, INPUT_PULLUP);
     }
     bool click() {
