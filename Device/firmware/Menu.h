@@ -7,7 +7,7 @@ class Menu
 {
   public:
     bool isActive = true;
-    Menu(GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oledRef) : oled(oledRef)
+    Menu(Config& config, GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oledRef) :config(config),  oled(oledRef)
     {
     }
 
@@ -20,6 +20,14 @@ class Menu
             oled.home();
             oled.setScale(5);
             oled.print("21:05");
+            
+            EEPROM.get(0, config);
+            if(config.isECGStarted)
+            {
+                oled.setScale(1);
+                oled.setCursor(6, 7);
+                oled.print("Идёт запись ЭКГ");
+            }
           break;
         case 2:
             oled.clear();
@@ -71,6 +79,7 @@ class Menu
       
     } 
   private:
+    Config& config;
     GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oled;
     byte widgetsCount = 3;
     byte currentPos = 1;

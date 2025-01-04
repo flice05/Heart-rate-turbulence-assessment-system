@@ -1,6 +1,8 @@
+#include <EEPROM.h>
 #include <GyverOLED.h>
 #include "SPI.h"
 #include "SD.h"
+#include "DeviceConfigs.h"
 #include "Menu.h"
 #include "button.h"
 #include "ECGApp.h"
@@ -13,16 +15,19 @@
 button leftKey(leftKeyPin);
 button rightKey(rightKeyPin);
 button goKey(goKeyPin);
+Config config;
 GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> oled;
 File myFile;   
-Menu menu(oled);
-ECGApp ecgApp(leftKey, rightKey, goKey, oled, myFile, menu);
+Menu menu(config, oled);
+ECGApp ecgApp(config, leftKey, rightKey, goKey, oled, myFile, menu);
 
 void setup()
 {
   pinMode(SS, OUTPUT);
   Serial.begin(9600);
 
+  //EEPROM.get(0, config);
+  //EEPROM.put(0, config);
   //Oled preview
   oled.init();
   oled.clear();
@@ -32,7 +37,7 @@ void setup()
   oled.setScale(1);
   oled.setCursor(0, 7);
   oled.print("      загрузка...         ");
-  delay(1800);
+  delay(1000);
   menu.DrawCurrentWidget();
 }
 
@@ -56,7 +61,7 @@ void loop()
     }
 
     //then update all mini apps (background mode)
-    //....
+    ecgApp.ECGAppBackground();
   }
   else
   {
@@ -64,10 +69,21 @@ void loop()
     switch(menu.GetCurrentWidgetID())
     {
       case 1:
+        menu.isActive = true;
         break;
       case 2:
         //Run ECG app in active mode
         ecgApp.ECGAppActive();
+        break;
+      case 3:
+        //костыль для сброса конфига
+        EEPROM.get(0, config);
+        config.isECGStarted = false;
+        EEPROM.put(0, config);
+        oled.setScale(1);
+        oled.home();
+        oled.print("запись остановлена");
+        menu.isActive = true;
         break;
     }
   }
