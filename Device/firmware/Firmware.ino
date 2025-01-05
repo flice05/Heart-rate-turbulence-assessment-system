@@ -70,20 +70,15 @@ void loop()
     {
       case 1:
         menu.isActive = true;
+        menu.DrawCurrentWidget();
         break;
       case 2:
         //Run ECG app in active mode
         ecgApp.ECGAppActive();
         break;
       case 3:
-        //костыль для сброса конфига
-        EEPROM.get(0, config);
-        config.isECGStarted = false;
-        EEPROM.put(0, config);
-        oled.setScale(1);
-        oled.home();
-        oled.print("запись остановлена");
         menu.isActive = true;
+        menu.DrawCurrentWidget();
         break;
     }
   }

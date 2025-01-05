@@ -25,7 +25,7 @@ class Menu
             if(config.isECGStarted)
             {
                 oled.setScale(1);
-                oled.setCursor(6, 7);
+                oled.setCursor(0, 7);
                 oled.print("Идёт запись ЭКГ");
             }
           break;
