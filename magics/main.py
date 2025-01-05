@@ -1,13 +1,12 @@
 import math
+from typing import List
 import numpy as np
 from neurokit2 import ecg_clean, signal_filter
 from scipy import signal
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
-# from biosppy.signals.ecg import hamilton_segmenter
-# from systole.detectors import pan_tompkins, hamilton
-# from systole.detection import ecg_peaks
 import neurokit2 as nk
+import datetime
 
 low_freq = 5
 high_freq = 15
@@ -63,6 +62,87 @@ def find_qrs_duration(q_peak: int, s_peak: int, fs: int):
     return duration
 
 
+def is_rr_interval_small(rr_interval):
+    if rr_interval < np.mean(rr_intervals) * 0.7:
+        return True
+    
+    return False
+
+
+def is_compensatory_pause(previous_rr_interval, next_rr_interval):
+    if previous_rr_interval + next_rr_interval >= 2 * np.mean(rr_intervals):
+        return True
+
+    return False
+    
+
+def is_qrs_long(q, s):
+    qrs_duration = find_qrs_duration(q, s, sampling_rate)
+
+    # Checking the duration of the QRS complex for deviations from the norm
+    if qrs_duration >= 0.18: # 0.18 is approximate value
+        return True
+
+    return False
+
+
+def find_extrasystols(q_peaks, s_peaks, rr_intervals):
+    """Find RR intervals indexes of extrasystoles
+    
+    :param q_peaks: Q peak index
+    :param s_peaks: S peak index
+    :param rr_intervals: array of RR intervals duration
+
+    :return: Array of RR intervals indexes corresponding to the PVC
+    """
+    extrasystols_rr_intervals = [] # Массив индексов RR интервалов, соответствующих ЖЭ
+
+    qrs_peaks: List[List[int]] = list()
+
+    for i in range(0, len(q_peaks)):
+        qrs = [q_peaks[i], s_peaks[i]]
+        qrs_peaks.append(qrs)
+
+    for i in range(0, len(qrs_peaks)):
+        q = q_peaks[i]
+        s = s_peaks[i]
+
+        if (i == 0) or (i == len(qrs_peaks) - 1) or (i == len(qrs_peaks) - 2):
+            continue
+        else:
+            small_rr_interval: bool = is_rr_interval_small(rr_intervals[i - 1])
+            compensatory_pause: bool = is_compensatory_pause(rr_intervals[i - 1], rr_intervals[i])
+            long_qrs: bool = is_qrs_long(q, s)
+
+            if small_rr_interval and compensatory_pause and long_qrs:
+                extrasystols_rr_intervals.append(i - 1)
+
+    return extrasystols_rr_intervals
+
+
+def calculate_turbulence_onset():
+    pass 
+
+
+
+def calculate_turbulence_slope():
+    pass
+
+
+
+def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):
+    # turbulence_onset # percent change in the average of the two normal beats after 
+                        # and the two normal beats before the VPC
+                        # how to calculate: ((RR1 + RR2) − (RR−1 + RR−2)/(RR−1 + RR−2) ∗ 100[%].
+
+    # turbulence_slope
+    # rr_previous_1
+    # rr_previos_2
+    # rr_next_1
+    # rr_next_2
+    pass
+
+
 
 ecg_data = np.loadtxt('Dataset/New100.TXT')
 sampling_rate = 100
@@ -76,16 +156,18 @@ _, waves = nk.ecg_delineate(filtered_ecg,
                             sampling_rate=sampling_rate,
                             method="peak",
                             show=False,
-                            show_type='peaks')
+                            show_type='all')
 
 q_peaks_indexes_raw = waves["ECG_Q_Peaks"]
 s_peaks_indexes_raw = waves["ECG_S_Peaks"]
 
+
+
+# if there are problems with the fact that there are 1 more R peak than Q and S peaks, then you need to do this: _r_peaks=r_peaks_indexes_raw[:-1]
 q_peaks_indexes, r_peaks_indexes, s_peaks_indexes = remove_incorrect_qrs_complex(_q_peaks=q_peaks_indexes_raw,
                                                                                  _r_peaks=r_peaks_indexes_raw,
-                                                                                 _s_peaks=s_peaks_indexes_raw)
+                                                                                 _s_peaks=s_peaks_indexes_raw) 
 
-qrs_complexes_duration = find_qrs_duration(q_peaks_=q_peaks_indexes, s_peaks_=s_peaks_indexes, fs=sampling_rate)
 
 print(f"Q = {q_peaks_indexes}")
 print(f"S = {s_peaks_indexes}")
@@ -101,37 +183,20 @@ print(f"r = {r_peaks_indexes}")
 
 
 
-print(f"Средний rr интервал: {np.mean(rr_intervals) * 0.7}")
+print(f"Средний rr интервал: {np.mean(rr_intervals)}")
+print(f"Количесвто RR интервалов: {len(rr_intervals)}")
+        
+    
+extrasystols = find_extrasystols(q_peaks=q_peaks_indexes,
+                                 s_peaks=s_peaks_indexes,
+                                 rr_intervals=rr_intervals)
 
-
-def find_extrasystols(q_peaks_indexes, r_peaks_indexes, s_peak_indexes):
-    # count_extrasystols = 0
-    # potential_extrasystols_peaks_indexes = []
-    # for i in range(len(rr_intervals)):
-    #     if rr_intervals[i] < np.mean(rr_intervals)* 0.7:
-    #         count_extrasystols += 1
-    #         potential_extrasystols_peaks_indexes.append(i)
-    #
-    # extrasystols = []
-    # for peak_index in potential_extrasystols_peaks_indexes:
-    #     if peak_index == 0 or peak_index == len(rr_intervals) - 1:
-    #         continue
-    #
-    #     previous_rr_interval = rr_intervals[peak_index - 1]
-    #     next_rr_interval = rr_intervals[peak_index]
-    #     if previous_rr_interval + next_rr_interval >= 2 * np.mean(rr_intervals):
-    #         print(1)
-    #         print(peak_index + 1)
-    #
-    # print(f"Количество потенциальных экстрасистол: {count_extrasystols}")
-    # print(f"Индексы потенциальных экстрасистол: {potential_extrasystols_peaks_indexes} {len(potential_extrasystols_peaks_indexes)}")
-    # print(np.mean(rr_intervals))
-    pass
 
 print(len(r_peaks_indexes))
 print(len(q_peaks_indexes))
 print(len(s_peaks_indexes))
-print(f"duration of qrs complexes {qrs_complexes_duration}")
+
+print(f"Массив RR интервалов, соответствующих ЖЭ: {extrasystols}")
 
 
 plt.figure()
@@ -146,7 +211,15 @@ plt.plot(time, filtered_ecg)
 plt.plot(r_ts, filtered_ecg[r_peaks_indexes], 'ro', label="R peaks")
 plt.plot(q_ts, filtered_ecg[q_peaks_indexes], "go", label="Q peaks")
 plt.plot(s_ts, filtered_ecg[s_peaks_indexes], "bo", label="S peaks")
+plt.xlabel("Время (с)")
+plt.ylabel("Амплитуда")
 plt.legend()
+
+plt.figure()
+plt.scatter(rr_intervals[1:], rr_intervals[:-1])
+plt.plot([0, max(np.max(rr_intervals[1:]), np.max(rr_intervals[:-1]))], 
+         [0, max(np.max(rr_intervals[1:]), np.max(rr_intervals[:-1]))], "grey")
+plt.grid()
 
 plt.figure()
 for i in range(len(rr_intervals)):
