@@ -1,12 +1,8 @@
 import math
 from typing import List
 import numpy as np
-from neurokit2 import ecg_clean, signal_filter
-from scipy import signal
-from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 import neurokit2 as nk
-import datetime
 
 low_freq = 5
 high_freq = 15
@@ -120,8 +116,9 @@ def find_extrasystols(q_peaks, s_peaks, rr_intervals):
     return extrasystols_rr_intervals
 
 
-def calculate_turbulence_onset():
-    pass 
+def calculate_turbulence_onset(prev1, prev2, next1, next2):
+    # how to calculate turbulence onset: ((RR1 + RR2) − (RR−1 + RR−2))/(RR−1 + RR−2) ∗ 100[%]
+    return (((next1 + next2) - (prev1 + prev2)) / (prev1 + prev2)) * 100 # turbulence onset in percents (%)
 
 
 
@@ -131,15 +128,17 @@ def calculate_turbulence_slope():
 
 
 def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):
-    # turbulence_onset # percent change in the average of the two normal beats after 
+    # turbulence_onset --- percent change in the average of the two normal beats after 
                         # and the two normal beats before the VPC
-                        # how to calculate: ((RR1 + RR2) − (RR−1 + RR−2)/(RR−1 + RR−2) ∗ 100[%].
+    
+    for i in range(len(pvc_rr_intervals)):
+        onset = calculate_turbulence_onset(rr_intervals_array[pvc_rr_intervals[i] - 1], # rr_previous_1
+                                           rr_intervals_array[pvc_rr_intervals[i] - 2], # rr_previos_2
+                                           rr_intervals_array[pvc_rr_intervals[i] + 1], # rr_next_1
+                                           rr_intervals_array[pvc_rr_intervals[i] + 2]) # rr_next_2
+        
+        slope = calculate_turbulence_slope()
 
-    # turbulence_slope
-    # rr_previous_1
-    # rr_previos_2
-    # rr_next_1
-    # rr_next_2
     pass
 
 
