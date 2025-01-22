@@ -8,6 +8,27 @@ low_freq = 5
 high_freq = 20
 
 
+
+def calculate_sdrr(rr_intervals_):
+    rr_intervals_ = [i * 1000 for i in rr_intervals_]
+    std = np.std(rr_intervals_)
+    return std
+
+
+def calculate_rmssd(rr_intervals_, pvc):
+    rr_intervals_ = [i * 1000 for i in rr_intervals_]
+    for i in range(len(pvc)):
+        del rr_intervals_[pvc[i]]  
+
+    nn_intervals_ = rr_intervals_
+    differences = list()
+    for i in range(len(nn_intervals_) - 1):
+        differences.append(((nn_intervals_[i + 1] - nn_intervals_[i]) ** 2))
+    
+    rmssd = np.sqrt((1/(len(rr_intervals_)-1)) * sum(differences))
+    return rmssd
+
+
 def remove_incorrect_qrs_complex(_q_peaks, _r_peaks, _s_peaks):
     """
     :param _q_peaks: array of Q peaks indexes (including incorrect values)
@@ -213,6 +234,8 @@ print(len(q_peaks_indexes))
 print(len(s_peaks_indexes))
 
 print(f"Массив RR интервалов, соответствующих ЖЭ: {extrasystols}")
+print(f"SDRR: {calculate_sdrr(rr_intervals)}")
+print(f"RMSSD: {calculate_rmssd(rr_intervals, extrasystols)}")
 
 
 plt.figure()
