@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import neurokit2 as nk
 
 low_freq = 5
-high_freq = 15
+high_freq = 20
 
 
 def remove_incorrect_qrs_complex(_q_peaks, _r_peaks, _s_peaks):
@@ -76,7 +76,7 @@ def is_qrs_long(q, s):
     qrs_duration = find_qrs_duration(q, s, sampling_rate)
 
     # Checking the duration of the QRS complex for deviations from the norm
-    if qrs_duration >= 0.18: # 0.18 is approximate value
+    if qrs_duration >= 0.18:
         return True
 
     return False
@@ -122,8 +122,13 @@ def calculate_turbulence_onset(prev1, prev2, next1, next2):
 
 
 
-def calculate_turbulence_slope():
-    pass
+def calculate_turbulence_slope(rr_intevals_after_pvc):
+    max_slope = -1000
+    for i in range(16):
+        after_pvc_5: List = rr_intevals_after_pvc[i:i+5]
+        max_slope = max((after_pvc_5[-1] - after_pvc_5[0]) * 1000, max_slope)
+
+    return max_slope 
 
 
 
@@ -131,19 +136,31 @@ def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):
     # turbulence_onset --- percent change in the average of the two normal beats after 
                         # and the two normal beats before the VPC
     
+    average_to = 0
+    average_ts = 0
+    count_ts_to = 0
+
     for i in range(len(pvc_rr_intervals)):
-        onset = calculate_turbulence_onset(rr_intervals_array[pvc_rr_intervals[i] - 1], # rr_previous_1
-                                           rr_intervals_array[pvc_rr_intervals[i] - 2], # rr_previos_2
-                                           rr_intervals_array[pvc_rr_intervals[i] + 1], # rr_next_1
-                                           rr_intervals_array[pvc_rr_intervals[i] + 2]) # rr_next_2
-        
-        slope = calculate_turbulence_slope()
+        if len(rr_intervals_array) - pvc_rr_intervals[i] > 20:
+            onset = calculate_turbulence_onset(rr_intervals_array[pvc_rr_intervals[i] - 1], # rr_previous_1
+                                            rr_intervals_array[pvc_rr_intervals[i] - 2], # rr_previos_2
+                                            rr_intervals_array[pvc_rr_intervals[i] + 1], # rr_next_1
+                                            rr_intervals_array[pvc_rr_intervals[i] + 2]) # rr_next_2
+            
+            slope = calculate_turbulence_slope(rr_intervals_array[pvc_rr_intervals[i]+2:pvc_rr_intervals[i]+22])
 
-    pass
+            average_to += onset
+            average_ts += slope
+            count_ts_to += 1
+
+    average_to = average_to / count_ts_to
+    average_ts = average_ts / count_ts_to
+
+    return average_to, average_ts
 
 
+ecg_data = np.loadtxt('Dataset/New100.TXT', skiprows=2)
 
-ecg_data = np.loadtxt('Dataset/New100.TXT')
 sampling_rate = 100
 filtered_ecg = nk.signal_filter(ecg_data, sampling_rate, low_freq, high_freq, "butterworth", 5)
 
@@ -171,7 +188,7 @@ q_peaks_indexes, r_peaks_indexes, s_peaks_indexes = remove_incorrect_qrs_complex
 print(f"Q = {q_peaks_indexes}")
 print(f"S = {s_peaks_indexes}")
 
-rr_intervals = np.diff(r_peaks_indexes) / sampling_rate
+rr_intervals = np.diff(r_peaks_indexes) / sampling_rate # in seconds
 print(len(r_peaks_indexes))
 print(f'ЧСС = {60 / np.mean(rr_intervals)}')
 time = np.arange(len(filtered_ecg)) / sampling_rate
@@ -219,6 +236,9 @@ plt.scatter(rr_intervals[1:], rr_intervals[:-1])
 plt.plot([0, max(np.max(rr_intervals[1:]), np.max(rr_intervals[:-1]))], 
          [0, max(np.max(rr_intervals[1:]), np.max(rr_intervals[:-1]))], "grey")
 plt.grid()
+plt.title("Скаттерограмма") 
+plt.xlabel("RRi+1(сек)")
+plt.ylabel("RRi+1 (сек)")
 
 plt.figure()
 for i in range(len(rr_intervals)):
