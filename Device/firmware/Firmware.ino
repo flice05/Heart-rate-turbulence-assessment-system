@@ -11,15 +11,19 @@
 #define leftKeyPin 6
 #define rightKeyPin 9
 #define goKeyPin 8
+#define powerKeyPin 5
 
 button leftKey(leftKeyPin);
 button rightKey(rightKeyPin);
 button goKey(goKeyPin);
+button powerKey(powerKeyPin);
 Config config;
 GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> oled;
 File myFile;   
 Menu menu(config, oled);
 ECGApp ecgApp(config, leftKey, rightKey, goKey, oled, myFile, menu);
+
+bool deviceOn = true;
 
 void setup()
 {
@@ -43,43 +47,69 @@ void setup()
 
 void loop()
 {
-  //menu mode
-  if(menu.isActive)
+  //"power"
+  if(deviceOn)
   {
-    if(leftKey.click())
+    //menu mode
+    if(menu.isActive)
     {
-      menu.Left();
+      if(leftKey.click())
+      {
+        menu.Left();
+      }
+      if(rightKey.click())
+      {
+        menu.Right();
+      }
+      if(goKey.click())//exit menu
+      {
+        menu.isActive = false;
+        oled.clear();
+      }
+
+      //then update all mini apps (background mode)
+      ecgApp.ECGAppBackground();
     }
-    if(rightKey.click())
+    else
     {
-      menu.Right();
-    }
-    if(goKey.click())//exit menu
-    {
-      menu.isActive = false;
-      oled.clear();
+      //run current mini app (active mode)
+      switch(menu.GetCurrentWidgetID())
+      {
+        case 1:
+          menu.isActive = true;
+          menu.DrawCurrentWidget();
+          break;
+        case 2:
+          //Run ECG app in active mode
+          ecgApp.ECGAppActive();
+          break;
+        case 3:
+          menu.isActive = true;
+          menu.DrawCurrentWidget();
+          break;
+      }
     }
 
-    //then update all mini apps (background mode)
-    ecgApp.ECGAppBackground();
+    //device off
+    if(powerKey.click())
+    {
+      menu.isActive = true;
+      menu.currentPos = 1;
+      oled.clear();
+      deviceOn = false;
+    }
   }
+  //if device off
   else
   {
-    //run current mini app (active mode)
-    switch(menu.GetCurrentWidgetID())
+    //update all mini apps (background mode)
+    ecgApp.ECGAppBackground();
+
+    //turn device on
+    if(powerKey.click())
     {
-      case 1:
-        menu.isActive = true;
-        menu.DrawCurrentWidget();
-        break;
-      case 2:
-        //Run ECG app in active mode
-        ecgApp.ECGAppActive();
-        break;
-      case 3:
-        menu.isActive = true;
-        menu.DrawCurrentWidget();
-        break;
+      menu.isActive = false;
+      deviceOn = true;
     }
   }
 }

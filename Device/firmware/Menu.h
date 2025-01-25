@@ -6,6 +6,7 @@
 class Menu
 {
   public:
+    byte currentPos = 1;
     bool isActive = true;
     Menu(Config& config, GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oledRef) :config(config),  oled(oledRef)
     {
@@ -86,7 +87,6 @@ class Menu
     Config& config;
     GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oled;
     byte widgetsCount = 3;
-    byte currentPos = 1;
 
 };
 #endif
