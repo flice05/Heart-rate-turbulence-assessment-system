@@ -18,8 +18,12 @@ class ECGApp
       {
         oled.clear();
         oled.home();
-        oled.print("Поиск SD карты...");
-        while (!SD.begin(SPI_HALF_SPEED, 7)) { Serial.println("1"); }
+        oled.println("Поиск SD карты...");
+        oled.println("[>]Не сохранять на SD");
+        while (!SD.begin(SPI_HALF_SPEED, 4)) 
+        {
+          if(rightKey.click()){break;}
+        }
         oled.clear();
     
         myFile = SD.open("ECG.txt", FILE_WRITE);
@@ -50,12 +54,6 @@ class ECGApp
         oled.print("[v] Назад");
 
         int data = analogRead(A0);
-        x0 = x;
-        x += 1;
-        y0 = y;
-        //y = 63 - (data * 0.0625);
-        y = 75 - (data * 0.0625);
-        Serial.println(data);
 
         if (myFile) 
         {
@@ -68,6 +66,11 @@ class ECGApp
         }
       
         //oled.dot(x, y);
+        x0 = x;
+        x += 1;
+        y0 = y;
+        //y = 63 - (data * 0.0625);
+        y = 75 - (data * 0.0625);
         oled.line(x0, y0, x, y);
 
         if(x>=128)
@@ -114,22 +117,43 @@ class ECGApp
         EEPROM.get(0, config);
         if(config.isECGStarted)//if ECG is "unactive" but it started (config) 
         {
+          bool findSD = true;
           oled.setScale(1);
           oled.setCursor(0, 6);
-          oled.print("Повторный поиск SD");
-          while (!SD.begin(SPI_HALF_SPEED, 7)) { Serial.println("1"); }
-          oled.setCursor(0, 6);
-          oled.print("SD карта обнаружена");
-          myFile = SD.open("ECG.txt", FILE_WRITE);
-          if (myFile) 
+          oled.print("Поиск SD. [v]-отмена");
+          while (!SD.begin(SPI_HALF_SPEED, 4)) 
           {
-            Serial.println("0");
-            myFile.close();
+            if(goKey.click())
+            {
+              oled.setCursor(0, 6);
+              oled.print("SD карта НЕ обнаружена      ");
+              oled.setCursor(0, 7);
+              oled.print("Запись ЭКГ остановлена");
+              //Stop recording
+              EEPROM.get(0, config);
+              config.isECGStarted = false;
+              isECGActive = false;
+              EEPROM.put(0, config);
+              isECGActive = false;
+              findSD = false;
+              break;
+            }
           }
-          else { Serial.println("1"); }
-      
-          myFile = SD.open("ECG.txt", FILE_WRITE);
-          isECGActive = true;
+          if(findSD)
+          {
+            oled.setCursor(0, 6);
+            oled.print("SD карта обнаружена");
+            myFile = SD.open("ECG.txt", FILE_WRITE);
+            if (myFile) 
+            {
+              Serial.println("0");
+              myFile.close();
+            }
+            else { Serial.println("1"); }
+        
+            myFile = SD.open("ECG.txt", FILE_WRITE);
+            isECGActive = true;
+          }
         }
       }
       else//update app
@@ -155,6 +179,7 @@ class ECGApp
 
   private:
     unsigned long ecgTimer = millis();
+    unsigned long oledTimer = millis();
     bool isECGActive = false;
     byte period = 1000 / 100; //1000 / v [Hz] = 10 ms
     byte x0 = 0;

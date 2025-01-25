@@ -8,9 +8,9 @@
 #include "ECGApp.h"
 #include "Bitmaps.h"
 
-#define leftKeyPin 2
-#define rightKeyPin 3
-#define goKeyPin 4
+#define leftKeyPin 6
+#define rightKeyPin 9
+#define goKeyPin 8
 
 button leftKey(leftKeyPin);
 button rightKey(rightKeyPin);
@@ -32,12 +32,12 @@ void setup()
   oled.init();
   oled.clear();
 
-  oled.drawBitmap(1, 1, loading_128x64, 128, 64, BITMAP_INVERT, BUF_ADD);
+  oled.drawBitmap(1, 1, loading_128x64, 128, 64, BITMAP_NORMAL, BUF_ADD);
 
   oled.setScale(1);
-  oled.setCursor(0, 7);
-  oled.print("      загрузка...         ");
-  delay(1000);
+  //oled.setCursor(0, 7);
+  //oled.print("      загрузка...         ");
+  delay(2900);
   menu.DrawCurrentWidget();
 }
 

@@ -18,8 +18,12 @@ class Menu
         case 1:
             oled.clear();
             oled.home();
-            oled.setScale(5);
-            oled.print("21:05");
+            oled.setScale(3);
+            oled.println("Холтер");
+            oled.setScale(2);
+            oled.println("v1.0");
+            oled.setScale(1);
+            oled.println("--------------------------");
             
             EEPROM.get(0, config);
             if(config.isECGStarted)
