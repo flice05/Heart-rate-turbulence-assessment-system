@@ -344,73 +344,49 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.canvas1.draw()
 
     def zoom_graph(self, event):
-        ax = self.pt  # Используем текущую ось для масштабирования
-
-        # Получаем текущие пределы осей
+        ax = self.pt 
         xlim = ax.get_xlim()
-        ylim = ax.get_ylim()
-
-        # Получаем координаты курсора в данных осей
+        ylim = ax.get_ylim()       
         x1 = event.xdata
         y1 = event.ydata
-
         if x1 is None or y1 is None:
-            return  # Если курсор вне графика
-
-        # Определяем коэффициент масштабирования
+            return        
         zoom_factor = 1.2
-
-        if event.button == 'up':  # При прокрутке вверх
+        if event.button == 'up':  
             scale_factor = 1 / zoom_factor
-        elif event.button == 'down':  # При прокрутке вниз
+        elif event.button == 'down':  
             scale_factor = zoom_factor
         else:
-            return  # Игнорируем другие кнопки
-
-        # Устанавливаем новые пределы осей
+            return 
         new_xlim = [x1 + (x - x1) * scale_factor for x in xlim]
         new_ylim = [y1 + (y - y1) * scale_factor for y in ylim]
-
         ax.set_xlim(new_xlim)
         ax.set_ylim(new_ylim)
-
-        # Обновляем canvas
         self.canvas.draw()
-
 
 
     def zoom_graph1(self, event):
         pt1 = self.figure.get_axes()[0]
-
-        # Получаем текущие пределы осей
         xlim = pt1.get_xlim()
         ylim = pt1.get_ylim()
-
-        # Получаем координаты курсора в данных осей
-        xdata = event.xdata
-        ydata = event.ydata
-
-        if xdata is None or ydata is None:
-            return  # Если курсор вне графика
-
-        # Определяем коэффициент масштабирования
+        x1 = event.xdata
+        y1 = event.ydata
+        if x1 is None or y1 is None:
+            return  
         zoom_factor = 1.2
-
-        if event.button == 'up':  # При прокрутке вверх
+        if event.button == 'up':
             scale_factor = 1 / zoom_factor
-        elif event.button == 'down':  # При прокрутке вниз
+        elif event.button == 'down':  
             scale_factor = zoom_factor
         else:
-            return  # Игнорируем другие кнопки
-
-        # Устанавливаем новые пределы осей
-        new_xlim = [xdata + (x - xdata) * scale_factor for x in xlim]
-        new_ylim = [ydata + (y - ydata) * scale_factor for y in ylim]
+            return
+        new_xlim = [x1 + (x - x1) * scale_factor for x in xlim]
+        new_ylim = [y1 + (y - y1) * scale_factor for y in ylim]
 
         pt1.set_xlim(new_xlim)
         pt1.set_ylim(new_ylim)
 
-        # Обновляем canvas
+     
         self.canvas1.draw()
 
 
