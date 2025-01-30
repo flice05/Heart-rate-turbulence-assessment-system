@@ -35,7 +35,7 @@ class ECGApp
           myFile.println("---");
           myFile.close();
         }
-        else { Serial.println("error opening 1 txt"); }
+        //else { Serial.println("error opening 1 txt"); }
     
         myFile = SD.open("ECG.txt", FILE_WRITE);
         isECGActive = true;
@@ -81,6 +81,8 @@ class ECGApp
       {
         //put data
         data = analogRead(A0);
+        Serial.println(",");
+        Serial.println(String(data));
         myFile.println(String(data));
         ecgTimer = millis();
       }
@@ -147,10 +149,10 @@ class ECGApp
             myFile = SD.open("ECG.txt", FILE_WRITE);
             if (myFile) 
             {
-              Serial.println("0");
+              //Serial.println("0");
               myFile.close();
             }
-            else { Serial.println("1"); }
+            //else { Serial.println("1"); }
         
             myFile = SD.open("ECG.txt", FILE_WRITE);
             isECGActive = true;
@@ -167,6 +169,8 @@ class ECGApp
         }
         if(millis() - ecgTimer >= period)
         {
+          Serial.println(",");
+          Serial.println(String(data));
           //myFile = SD.open("ECG.txt", FILE_WRITE);
           myFile.println(String(analogRead(A0)));
           ecgTimer = millis();

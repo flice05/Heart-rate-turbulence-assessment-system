@@ -66,6 +66,7 @@ void loop()
       }
       if(goKey.click())//exit menu
       {
+        //Serial.println("a");
         menu.isActive = false;
         oled.clear();
       }
