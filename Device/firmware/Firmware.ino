@@ -12,6 +12,7 @@
 #define rightKeyPin 9
 #define goKeyPin 8
 #define powerKeyPin 5
+//#define chipSelect 10
 
 button leftKey(leftKeyPin);
 button rightKey(rightKeyPin);
@@ -27,7 +28,9 @@ bool deviceOn = true;
 
 void setup()
 {
-  pinMode(SS, OUTPUT);
+  while(!powerKey.click()){}
+  
+  //pinMode(SS, OUTPUT);
   Serial.begin(9600);
 
   //EEPROM.get(0, config);

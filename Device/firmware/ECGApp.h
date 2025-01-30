@@ -20,7 +20,7 @@ class ECGApp
         oled.home();
         oled.println("Поиск SD карты...");
         oled.println("[>]Не сохранять на SD");
-        while (!SD.begin(SPI_HALF_SPEED, 4)) 
+        while (!SD.begin(SPI_HALF_SPEED, 10)) 
         {
           if(rightKey.click()){break;}
         }
@@ -46,24 +46,12 @@ class ECGApp
       }
 
       //update app
-      if(millis() - ecgTimer >= period)
+      if(millis() - oledTimer >= 50)
       {
         oled.setScale(1);
         oled.home();
         oled.println("[>] Завершить");
         oled.print("[v] Назад");
-
-        int data = analogRead(A0);
-
-        if (myFile) 
-        {
-          myFile.println(String(data));
-        }
-        else
-        {
-          Serial.println("1"); 
-          myFile.close();
-        }
       
         //oled.dot(x, y);
         x0 = x;
@@ -80,7 +68,20 @@ class ECGApp
           myFile.close();
           myFile = SD.open("ECG.txt", FILE_WRITE);
         }
-
+        oledTimer = millis();
+        
+      }
+      if(millis() - sdTimer >= 3000)
+      {
+        myFile.close();
+        myFile = SD.open("ECG.txt", FILE_WRITE);
+        sdTimer = millis();
+      }
+      if(millis() - ecgTimer >= period)
+      {
+        //put data
+        data = analogRead(A0);
+        myFile.println(String(data));
         ecgTimer = millis();
       }
 
@@ -121,7 +122,7 @@ class ECGApp
           oled.setScale(1);
           oled.setCursor(0, 6);
           oled.print("Поиск SD. [v]-отмена");
-          while (!SD.begin(SPI_HALF_SPEED, 4)) 
+          while (!SD.begin(SPI_HALF_SPEED, 10)) 
           {
             if(goKey.click())
             {
@@ -158,30 +159,29 @@ class ECGApp
       }
       else//update app
       {
+        if(millis() - sdTimer >= 3000)
+        {
+          myFile.close();
+          myFile = SD.open("ECG.txt", FILE_WRITE);
+          sdTimer = millis();
+        }
         if(millis() - ecgTimer >= period)
         {
-          myFile = SD.open("ECG.txt", FILE_WRITE);
-
-          if (myFile) 
-          {
-            myFile.println(String(analogRead(A0)));
-            myFile.close();
-          }
-          else
-          {
-            myFile.close();
-          }
-
+          //myFile = SD.open("ECG.txt", FILE_WRITE);
+          myFile.println(String(analogRead(A0)));
           ecgTimer = millis();
         }
+
       }
     }
 
   private:
+    int data = 0;//ECG signal
     unsigned long ecgTimer = millis();
+    unsigned long sdTimer = millis();
     unsigned long oledTimer = millis();
     bool isECGActive = false;
-    byte period = 1000 / 100; //1000 / v [Hz] = 10 ms
+    byte period = 1000 / 40; //1000 / v [Hz] = x ms
     byte x0 = 0;
     byte y0 = 0;
     byte x = 0;
