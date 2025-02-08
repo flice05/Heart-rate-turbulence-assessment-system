@@ -103,16 +103,25 @@ def is_qrs_long(q, s):
     return False
 
 
-def find_extrasystols(q_peaks, s_peaks, rr_intervals):
+def is_large_amplitude(mean_ampl, r_peak_):
+    if r_peak_ > mean_ampl * 1.2:
+        return True
+
+    return False
+
+def find_extrasystols(q_peaks, r_peaks, s_peaks, rr_intervals):
     """Find RR intervals indexes of extrasystoles
     
-    :param q_peaks: Q peak index
-    :param s_peaks: S peak index
+    :param q_peaks: Q peaks indexes
+    :param r_peaks: R peaks indexes
+    :param s_peaks: S peaks indexes
     :param rr_intervals: array of RR intervals duration
 
     :return: Array of RR intervals indexes corresponding to the PVC
     """
     extrasystols_rr_intervals = [] # Массив индексов RR интервалов, соответствующих ЖЭ
+
+    mean_amplitude = np.mean([ecg_data[r_peaks]])
 
     qrs_peaks: List[List[int]] = list()
 
@@ -122,6 +131,7 @@ def find_extrasystols(q_peaks, s_peaks, rr_intervals):
 
     for i in range(0, len(qrs_peaks)):
         q = q_peaks[i]
+        r = r_peaks[i]
         s = s_peaks[i]
 
         if (i == 0) or (i == len(qrs_peaks) - 1) or (i == len(qrs_peaks) - 2):
@@ -130,8 +140,9 @@ def find_extrasystols(q_peaks, s_peaks, rr_intervals):
             small_rr_interval: bool = is_rr_interval_small(rr_intervals[i - 1])
             compensatory_pause: bool = is_compensatory_pause(rr_intervals[i - 1], rr_intervals[i])
             long_qrs: bool = is_qrs_long(q, s)
+            large_amplitude: bool = is_large_amplitude(mean_amplitude, r)
 
-            if small_rr_interval and compensatory_pause and long_qrs:
+            if small_rr_interval and compensatory_pause and long_qrs and large_amplitude:
                 extrasystols_rr_intervals.append(i - 1)
 
     return extrasystols_rr_intervals
