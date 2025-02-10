@@ -304,90 +304,111 @@ class MyWidget(QMainWindow, Ui_MainWindow):
         self.ui.label_12.setFont(QtGui.QFont('SansSerif', 28))
         self.ui.label_8.setText(lab9)
         self.ui.label_8.setFont(QtGui.QFont('SansSerif', 28))
-        self.figure, self.pt = plt.subplots()
+        self.figure, self.grath = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
-        self.gr_itog = QGraphicsScene(self)
-        self.gr_itog.addWidget(self.canvas)
-        self.ui.graphicsView.setScene(self.gr_itog)
-        self.figure, self.pt1 = plt.subplots()
+        self.scene = QGraphicsScene(self)
+        self.scene.addWidget(self.canvas)
+        self.ui.graphicsView.setScene(self.scene)
+        self.figure, self.grath1 = plt.subplots()
         self.canvas1 = FigureCanvas(self.figure)
-        self.canvas1.mpl_connect('scroll_event', self.zoom_graph1)
-        self.gr_itog1 = QGraphicsScene(self)
-        self.gr_itog1.addWidget(self.canvas1)
-        self.ui.graphicsView_2.setScene(self.gr_itog1)
-        self.plot_ecg()
-        self.plot_ecg1()
+        self.scene1 = QGraphicsScene(self)
+        self.scene1.addWidget(self.canvas1)
+        self.ui.graphicsView_2.setScene(self.scene1)
+        self.window_length = 100
+        self.current_position = 0
+        self.window_length2 = 100
+        self.current_position2 = 0
 
-    def plot_ecg(self):
-        ecg = np.loadtxt('New100.TXT')
-        grath = np.linspace(0, len(ecg) / 40, len(ecg))
+        self.load_data('New100.TXT')
+        self.ui.horizontalSlider_2.setMinimum(0)
+        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - self.window_length)
+        self.ui.horizontalSlider_2.setValue(self.current_position)
+        self.ui.horizontalSlider_2.valueChanged.connect(self.update_plot)
+        self.ui.horizontalSlider.setMinimum(1)
+        self.ui.horizontalSlider.setMaximum(len(self.znach))
+        self.ui.horizontalSlider.setValue(self.window_length)
+        self.ui.horizontalSlider_3.setMinimum(1)
+        self.ui.horizontalSlider_3.setMaximum(500)
+        self.ui.horizontalSlider_3.setValue(20)
+        self.ui.horizontalSlider_5.setMinimum(0)
+        self.ui.horizontalSlider_5.setMaximum(800 - 1 - self.window_length2)
+        self.ui.horizontalSlider_5.setValue(self.current_position2)
+        self.ui.horizontalSlider_5.valueChanged.connect(self.update_plot)
+        self.ui.horizontalSlider_4.setMinimum(1)
+        self.ui.horizontalSlider_4.setMaximum(800)
+        self.ui.horizontalSlider_4.setValue(self.window_length2)
+        self.ui.horizontalSlider_6.setMinimum(1)
+        self.ui.horizontalSlider_6.setMaximum(500)
+        self.ui.horizontalSlider_6.setValue(20)
 
-        self.pt.clear()  # Очищаем предыдущий график
-        self.pt.plot(grath, ecg)
-        self.pt.set_title('ЭКГ сигнал')
-        self.pt.set_xlabel("Время")
-        self.pt.set_ylabel("Амплитуда")
-        self.pt.set_ylim(bottom=0)  # Устанавливаем нижний предел по оси Y
-        self.canvas.draw()  # Обновляем canvas
 
-        # Подключаем обработчик события прокрутки
-        self.canvas.mpl_connect('scroll_event', self.zoom_graph)
+        self.ui.horizontalSlider_2.valueChanged.connect(self.update_plot)
+        self.ui.horizontalSlider.valueChanged.connect(self.update_window_length)
+        self.ui.horizontalSlider_3.valueChanged.connect(self.update_height)
+        self.ui.horizontalSlider_5.valueChanged.connect(self.update_plot2)
+        self.ui.horizontalSlider_4.valueChanged.connect(self.update_window_length2)
+        self.ui.horizontalSlider_6.valueChanged.connect(self.update_height2)
+        self.update_plot()
+        self.update_plot2()
 
-    def plot_ecg1(self):
-        self.figure.clear()
-        rr_intervals_ms = [interval * 1000 for interval in rr_intervals]
-        pt1 = self.figure.add_subplot(111)
-        pt1.plot(range(len(rr_intervals_ms)), rr_intervals_ms,linestyle='-')
-        pt1.set_title("График RR-интервалов")
-        pt1.set_xlabel("Номер RR-интервала")
-        pt1.set_ylabel("RR-интервал, мс")
-        self.canvas1.draw()
 
-    def zoom_graph(self, event):
-        ax = self.pt 
-        xlim = ax.get_xlim()
-        ylim = ax.get_ylim()       
-        x1 = event.xdata
-        y1 = event.ydata
-        if x1 is None or y1 is None:
-            return        
-        zoom_factor = 1.2
-        if event.button == 'up':  
-            scale_factor = 1 / zoom_factor
-        elif event.button == 'down':  
-            scale_factor = zoom_factor
-        else:
-            return 
-        new_xlim = [x1 + (x - x1) * scale_factor for x in xlim]
-        new_ylim = [y1 + (y - y1) * scale_factor for y in ylim]
-        ax.set_xlim(new_xlim)
-        ax.set_ylim(new_ylim)
+
+    def load_data(self, filename):
+        self.znach = pd.read_csv(filename, header=None)
+        self.znach.columns = ['ECG']
+        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - 100)
+
+    def update_plot(self):
+        self.current_position = self.ui.horizontalSlider_2.value()
+        start = self.current_position
+        end = start + self.window_length
+        height = self.ui.horizontalSlider_3.value()
+        self.grath.clear()
+        self.grath.plot(self.znach['ECG'][start:end])
+        self.grath.set_title("График ЭКГ")
+        self.grath.set_xlabel("Время")
+        self.grath.set_ylabel("Амплитуда")
+        y_min = min(self.znach['ECG'][start:end]) - height // 2
+        y_max = max(self.znach['ECG'][start:end]) + height // 2
+        self.grath.set_ylim(y_min, y_max)
+
         self.canvas.draw()
 
+    def update_window_length(self):
+        self.window_length = self.ui.horizontalSlider.value()
+        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - self.window_length)
+        self.update_plot()
 
-    def zoom_graph1(self, event):
-        pt1 = self.figure.get_axes()[0]
-        xlim = pt1.get_xlim()
-        ylim = pt1.get_ylim()
-        x1 = event.xdata
-        y1 = event.ydata
-        if x1 is None or y1 is None:
-            return  
-        zoom_factor = 1.2
-        if event.button == 'up':
-            scale_factor = 1 / zoom_factor
-        elif event.button == 'down':  
-            scale_factor = zoom_factor
-        else:
-            return
-        new_xlim = [x1 + (x - x1) * scale_factor for x in xlim]
-        new_ylim = [y1 + (y - y1) * scale_factor for y in ylim]
+    def update_height(self):
+        self.update_plot()
 
-        pt1.set_xlim(new_xlim)
-        pt1.set_ylim(new_ylim)
 
-     
+    def update_plot2(self):
+        rr_intervals_ms = [interval * 1000 for interval in rr_intervals]
+        self.znach1 = rr_intervals_ms
+        self.ui.horizontalSlider_5.setMaximum(len(self.znach1) - 1 - 100)
+        self.current_position2 = self.ui.horizontalSlider_5.value()
+        start = self.current_position2
+        end = start + self.window_length2
+        height = self.ui.horizontalSlider_6.value()
+        self.grath1.clear()
+        self.grath1.plot(self.znach1[start:end])
+        self.grath1.set_title("График RR-интервалов")
+        self.grath1.set_xlabel("Номер RR-интервала")
+        self.grath1.set_ylabel("RR-интервал, мс")
+        y_min = min(self.znach1[start:end]) - height // 2
+        y_max = max(self.znach1[start:end]) + height // 2
+        self.grath1.set_ylim(y_min, y_max)
+
         self.canvas1.draw()
+
+    def update_window_length2(self):
+        self.window_length2 = self.ui.horizontalSlider_4.value()
+        self.ui.horizontalSlider_5.setMaximum(len(self.znach1) - 1 - self.window_length2)
+        self.update_plot2()
+
+    def update_height2(self):
+        self.update_plot2()
 
 
 
