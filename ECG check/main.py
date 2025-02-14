@@ -148,8 +148,10 @@ def find_extrasystols(q_peaks, r_peaks, s_peaks, rr_intervals):
     return extrasystols_rr_intervals
 
 
-def calculate_turbulence_onset(prev1, prev2, next1, next2):
+def calculate_turbulence_onset(rrs_before_pvc):
     # how to calculate turbulence onset: ((RR1 + RR2) − (RR−1 + RR−2))/(RR−1 + RR−2) ∗ 100[%]
+
+    prev1, prev2, next1, next2 = rrs_before_pvc
     return (((next1 + next2) - (prev1 + prev2)) / (prev1 + prev2)) * 100 # turbulence onset in percents (%)
 
 
@@ -164,22 +166,36 @@ def calculate_turbulence_slope(rr_intevals_after_pvc):
 
 
 
-def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):
-    # turbulence_onset --- percent change in the average of the two normal beats after 
-                        # and the two normal beats before the VPC
-    
+def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):    
+    # Из анализа исключаются RR, соответствующие следующим показателям: интервалы <300 мс, >2000 мс, 
+    # с разницей между предшествующими синусовыми интервалами >200 мс, 
+    # с отличием >20% от среднего из 5 последовательных синусовых интервалов.
+
+
     average_to = 0
     average_ts = 0
     count_ts_to = 0
 
     for i in range(len(pvc_rr_intervals)):
-        if len(rr_intervals_array) - pvc_rr_intervals[i] > 20:
-            onset = calculate_turbulence_onset(rr_intervals_array[pvc_rr_intervals[i] - 1], # rr_previous_1
-                                            rr_intervals_array[pvc_rr_intervals[i] - 2], # rr_previos_2
-                                            rr_intervals_array[pvc_rr_intervals[i] + 1], # rr_next_1
-                                            rr_intervals_array[pvc_rr_intervals[i] + 2]) # rr_next_2
+        if len(rr_intervals_array) - pvc_rr_intervals[i] > 20 and pvc_rr_intervals[i] >= 2:
+
+            before_pvc = [rr_intervals_array[pvc_rr_intervals[i] - 1], 
+                          rr_intervals_array[pvc_rr_intervals[i] - 2], 
+                          rr_intervals_array[pvc_rr_intervals[i] + 1], 
+                          rr_intervals_array[pvc_rr_intervals[i] + 2]]
+
+            after_pvc = [rr_intervals_array[pvc_rr_intervals[i]+2:pvc_rr_intervals[i]+22]]
+
+            if any(rr > 2000 or rr < 300 for rr in before_pvc + after_pvc):
+                continue
+            if any(i > 200 for i in np.diff(before_pvc)):
+                continue
+            if any(i > 1.2 * np.mean(after_pvc) for i in after_pvc):
+                continue
             
-            slope = calculate_turbulence_slope(rr_intervals_array[pvc_rr_intervals[i]+2:pvc_rr_intervals[i]+22])
+            onset = calculate_turbulence_onset(before_pvc) 
+
+            slope = calculate_turbulence_slope(after_pvc)
 
             average_to += onset
             average_ts += slope
@@ -220,7 +236,7 @@ q_peaks_indexes, r_peaks_indexes, s_peaks_indexes = remove_incorrect_qrs_complex
 print(f"Q = {q_peaks_indexes}")
 print(f"S = {s_peaks_indexes}")
 
-rr_intervals = np.diff(r_peaks_indexes) / sampling_rate # in seconds
+rr_intervals = np.diff(r_peaks_indexes) / sampling_rate * 1000 # in milliseconds (ms)
 print(len(r_peaks_indexes))
 print(f'ЧСС = {60 / np.mean(rr_intervals)}')
 time = np.arange(len(filtered_ecg)) / sampling_rate
@@ -243,10 +259,13 @@ extrasystols = find_extrasystols(q_peaks=q_peaks_indexes,
 print(len(r_peaks_indexes))
 print(len(q_peaks_indexes))
 print(len(s_peaks_indexes))
-
 print(f"Массив RR интервалов, соответствующих ЖЭ: {extrasystols}")
 print(f"SDRR: {calculate_sdrr(rr_intervals)}")
 print(f"RMSSD: {calculate_rmssd(rr_intervals, extrasystols)}")
+
+
+
+
 
 
 plt.figure()
