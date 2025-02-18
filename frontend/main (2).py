@@ -1,6 +1,7 @@
 import sys
 import matplotlib
 
+
 matplotlib.use('QtAgg')
 
 from PyQt6.QtWidgets import QApplication, QMainWindow
@@ -20,19 +21,148 @@ from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
 import neurokit2 as nk
+a  = input()
+class MyWidget(QMainWindow, Ui_MainWindow):
+    def __init__(self,*args, **kwargs):
+        super(MyWidget, self).__init__(*args, **kwargs)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
+        self.ui.label_7.setText(lab1)
+        self.ui.label_7.setFont(QtGui.QFont('SansSerif', 28))
+        self.ui.label_2.setText(lab2)
+        self.ui.label_2.setFont(QtGui.QFont('SansSerif', 28))
+        self.ui.label_3.setText(lab3)
+        self.ui.label_3.setFont(QtGui.QFont('SansSerif', 28))
+        self.ui.label.setText(lab4)
+        self.ui.label.setFont(QtGui.QFont('SansSerif', 28))
+        self.ui.label_10.setText(lab5)
+        self.ui.label_10.setFont(QtGui.QFont('SansSerif', 28))
+        self.ui.label_9.setText(lab6)
+        self.ui.label_9.setFont(QtGui.QFont('SansSerif', 28))
+        self.ui.label_11.setText(lab7)
+        self.ui.label_11.setFont(QtGui.QFont('SansSerif', 28))
+        self.ui.label_12.setText(lab8)
+        self.ui.label_12.setFont(QtGui.QFont('SansSerif', 28))
+        self.ui.label_8.setText(lab9)
+        self.ui.label_8.setFont(QtGui.QFont('SansSerif', 28))
+
+        self.load_data(a)
+        self.figure, self.grath = plt.subplots()
+        self.canvas = FigureCanvas(self.figure)
+        self.scene = QGraphicsScene(self)
+        self.scene.addWidget(self.canvas)
+        self.ui.graphicsView.setScene(self.scene)
+        self.figure, self.grath1 = plt.subplots()
+        self.canvas1 = FigureCanvas(self.figure)
+        self.scene1 = QGraphicsScene(self)
+        self.scene1.addWidget(self.canvas1)
+        self.ui.graphicsView_2.setScene(self.scene1)
+        self.window_length = 100
+        self.current_position = 0
+        self.window_length2 = 100
+        self.current_position2 = 0
+        self.ui.horizontalSlider_2.setMinimum(0)
+        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - self.window_length)
+        self.ui.horizontalSlider_2.setValue(self.current_position)
+        self.ui.horizontalSlider_2.valueChanged.connect(self.update_plot)
+        self.ui.horizontalSlider.setMinimum(1)
+        self.ui.horizontalSlider.setMaximum(len(self.znach))
+        self.ui.horizontalSlider.setValue(self.window_length)
+        self.ui.horizontalSlider_3.setMinimum(1)
+        self.ui.horizontalSlider_3.setMaximum(500)
+        self.ui.horizontalSlider_3.setValue(20)
+        self.ui.horizontalSlider_5.setMinimum(0)
+        self.ui.horizontalSlider_5.setMaximum(800 - 1 - self.window_length2)
+        self.ui.horizontalSlider_5.setValue(self.current_position2)
+        self.ui.horizontalSlider_5.valueChanged.connect(self.update_plot)
+        self.ui.horizontalSlider_4.setMinimum(1)
+        self.ui.horizontalSlider_4.setMaximum(800)
+        self.ui.horizontalSlider_4.setValue(self.window_length2)
+        self.ui.horizontalSlider_6.setMinimum(100)
+        self.ui.horizontalSlider_6.setMaximum(500)
+        self.ui.horizontalSlider_6.setValue(20)
+
+        self.ui.horizontalSlider_2.valueChanged.connect(self.update_plot)
+        self.ui.horizontalSlider.valueChanged.connect(self.update_window_length)
+        self.ui.horizontalSlider_3.valueChanged.connect(self.update_plot)
+        self.ui.horizontalSlider_5.valueChanged.connect(self.update_plot2)
+        self.ui.horizontalSlider_4.valueChanged.connect(self.update_window_length2)
+        self.ui.horizontalSlider_6.valueChanged.connect(self.update_plot2)
+        self.update_plot()
+        self.update_plot2()
+
+
+
+
+    def load_data(self, filename):
+        self.znach = pd.read_csv(filename, header=None)
+        e = self.znach[0].values
+        filter_e = nk.signal_filter(e, sampling_rate, low_freq, high_freq, "butterworth", 5)
+        self.znach =  pd.DataFrame(filter_e, columns=['ECG'])
+        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - 100)
+
+
+
+
+    def update_plot(self):
+        self.current_position = self.ui.horizontalSlider_2.value()
+        st = self.current_position
+        end = st + self.window_length
+        h = self.ui.horizontalSlider_3.value()
+        self.grath.clear()
+        self.grath.plot(self.znach[st:end])
+        self.grath.set_title("График ЭКГ")
+        self.grath.set_xlabel("Время")
+        self.grath.set_ylabel("Амплитуда")
+        min_ = min(self.znach['ECG'][st:end]) - h // 2
+        max_ = max(self.znach['ECG'][st:end]) + h // 2
+        self.grath.set_ylim(min_, max_)
+        self.canvas.draw()
+
+    def update_window_length(self):
+        self.window_length = self.ui.horizontalSlider.value()
+        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - self.window_length)
+        self.update_plot()
+
+
+
+
+    def update_plot2(self):
+        rr_intervals_ms = [interval * 1000 for interval in rr_intervals]
+        self.znach1 = rr_intervals_ms
+        self.ui.horizontalSlider_5.setMaximum(800 - 1 - self.window_length2)
+        self.current_position2 = self.ui.horizontalSlider_5.value()
+        st = self.current_position2
+        end = st + self.window_length2
+        h = self.ui.horizontalSlider_6.value()
+        self.grath1.clear()
+        self.grath1.plot(self.znach1[st:end])
+        self.grath1.set_title("График RR-интервалов")
+        self.grath1.set_xlabel("Номер RR-интервала")
+        self.grath1.set_ylabel("RR-интервал, мс")
+        min_ = min(self.znach1[st:end]) - h // 2
+        max_ = max(self.znach1[st:end]) + h // 2
+        self.grath1.set_ylim(min_, max_)
+        self.canvas1.draw()
+
+    def update_window_length2(self):
+        self.window_length2 = self.ui.horizontalSlider_4.value()
+        self.ui.horizontalSlider_5.setMaximum(800 - 1 - self.window_length2)
+        self.update_plot2()
+
 
 low_freq = 5
 high_freq = 20
 
 
 def calculate_sdrr(rr_intervals_):
-    rr_intervals_ = [i * 1000 for i in rr_intervals_]
+    rr_intervals_ = [i  for i in rr_intervals_]
     std = np.std(rr_intervals_)
     return std
 
 
 def calculate_rmssd(rr_intervals_, pvc):
-    rr_intervals_ = [i * 1000 for i in rr_intervals_]
+    rr_intervals_ = [i  for i in rr_intervals_]
     for i in range(len(pvc)):
         del rr_intervals_[pvc[i]]
 
@@ -153,7 +283,8 @@ def find_extrasystols(q_peaks, s_peaks, rr_intervals):
     return extrasystols_rr_intervals
 
 
-def calculate_turbulence_onset(prev1, prev2, next1, next2):
+def calculate_turbulence_onset(rrs_before_pvc):
+    prev1, prev2, next1, next2 = rrs_before_pvc
     # how to calculate turbulence onset: ((RR1 + RR2) − (RR−1 + RR−2))/(RR−1 + RR−2) ∗ 100[%]
     return (((next1 + next2) - (prev1 + prev2)) / (prev1 + prev2)) * 100  # turbulence onset in percents (%)
 
@@ -176,13 +307,25 @@ def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):
     count_ts_to = 0
 
     for i in range(len(pvc_rr_intervals)):
-        if len(rr_intervals_array) - pvc_rr_intervals[i] > 20:
-            onset = calculate_turbulence_onset(rr_intervals_array[pvc_rr_intervals[i] - 1],  # rr_previous_1
-                                               rr_intervals_array[pvc_rr_intervals[i] - 2],  # rr_previos_2
-                                               rr_intervals_array[pvc_rr_intervals[i] + 1],  # rr_next_1
-                                               rr_intervals_array[pvc_rr_intervals[i] + 2])  # rr_next_2
+        if len(rr_intervals_array) - pvc_rr_intervals[i] > 20 and pvc_rr_intervals[i] >= 2:
 
-            slope = calculate_turbulence_slope(rr_intervals_array[pvc_rr_intervals[i] + 2:pvc_rr_intervals[i] + 22])
+            before_pvc = [rr_intervals_array[pvc_rr_intervals[i] - 1],
+                          rr_intervals_array[pvc_rr_intervals[i] - 2],
+                          rr_intervals_array[pvc_rr_intervals[i] + 1],
+                          rr_intervals_array[pvc_rr_intervals[i] + 2]]
+
+            after_pvc = [rr_intervals_array[pvc_rr_intervals[i] + 2:pvc_rr_intervals[i] + 22]]
+
+            if any(rr > 2000 or rr < 300 for rr in before_pvc + after_pvc):
+                continue
+            if any(i > 200 for i in np.diff(before_pvc)):
+                continue
+            if any(i > 1.2 * np.mean(after_pvc) for i in after_pvc):
+                continue
+
+            onset = calculate_turbulence_onset(before_pvc)
+
+            slope = calculate_turbulence_slope(after_pvc)
 
             average_to += onset
             average_ts += slope
@@ -198,9 +341,7 @@ def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):
 
     return average_to, average_ts
 
-
-ecg_data = np.loadtxt('Dataset/New100.TXT', skiprows=2)
-
+ecg_data = np.loadtxt(a, skiprows=2)
 sampling_rate = 100
 filtered_ecg = nk.signal_filter(ecg_data, sampling_rate, low_freq, high_freq, "butterworth", 5)
 
@@ -236,16 +377,16 @@ def find_average_qrs(q_peaks, s_peaks):
 print(f"Q = {q_peaks_indexes}")
 print(f"S = {s_peaks_indexes}")
 
-rr_intervals = np.diff(r_peaks_indexes) / sampling_rate  # in seconds
+rr_intervals = np.diff(r_peaks_indexes) / sampling_rate * 1000 # in milliseconds (ms)
 print(len(r_peaks_indexes))
-lab4 = (f'ЧСС: {round(60 / np.mean(rr_intervals),2) } уд./мин')
+lab4 = (f'ЧСС: {round(60000 / np.mean(rr_intervals),2) } уд./мин')
 time = np.arange(len(filtered_ecg)) / sampling_rate
 r_ts = np.array(r_peaks_indexes) / sampling_rate
 q_ts = np.array(q_peaks_indexes) / sampling_rate
 s_ts = np.array(s_peaks_indexes) / sampling_rate
 print(f"r = {r_peaks_indexes}")
 
-lab1 = (f"Средний RR интервал: {round(np.mean(rr_intervals),2)} секунд")
+lab1 = (f"Средний RR интервал: {round(np.mean(rr_intervals),2)} миллисекунд")
 print(f"Количесвто RR интервалов: {len(rr_intervals)}")
 
 extrasystols = find_extrasystols(q_peaks=q_peaks_indexes,
@@ -266,11 +407,11 @@ lab3 = (f"RMSSD: {round(calculate_rmssd(rr_intervals, extrasystols),2)}")
 average_onset, average_slope = analyz_heart_rate_turbulence(rr_intervals_array=rr_intervals,
                                                             pvc_rr_intervals=extrasystols)
 if average_onset == 0:
-    lab5 = (f"Средний TO: необнаружено")
+    lab5 = (f"Средний TO: не обнаружено")
 else:
     lab5 = (f"Средний TO: {average_onset}")
 if average_slope == 0:
-    lab6 = (f"Средний TS: необнаружено")
+    lab6 = (f"Средний TS: не обнаружено")
 else:
     lab6 = (f"Средний TO: {average_slope}")
 lab7 = (f"Количество ЖЭ: {count_}")
@@ -281,134 +422,7 @@ if count_ == 1:
 if count_ > 1:
     lab8 = (f"Выявлено {count_} желудочковых экстрасистол (ЖЭС). В норме экстрасистолия отсутствует.")
 lab9 = (f"Средний QRS: {round(find_average_qrs(q_peaks_indexes, s_peaks_indexes),2)} сек")
-class MyWidget(QMainWindow, Ui_MainWindow):
-    def __init__(self,*args, **kwargs):
-        super(MyWidget, self).__init__(*args, **kwargs)
-        self.ui = Ui_MainWindow()
-        self.ui.setupUi(self)
-        self.ui.label_7.setText(lab1)
-        self.ui.label_7.setFont(QtGui.QFont('SansSerif', 28))
-        self.ui.label_2.setText(lab2)
-        self.ui.label_2.setFont(QtGui.QFont('SansSerif', 28))
-        self.ui.label_3.setText(lab3)
-        self.ui.label_3.setFont(QtGui.QFont('SansSerif', 28))
-        self.ui.label.setText(lab4)
-        self.ui.label.setFont(QtGui.QFont('SansSerif', 28))
-        self.ui.label_10.setText(lab5)
-        self.ui.label_10.setFont(QtGui.QFont('SansSerif', 28))
-        self.ui.label_9.setText(lab6)
-        self.ui.label_9.setFont(QtGui.QFont('SansSerif', 28))
-        self.ui.label_11.setText(lab7)
-        self.ui.label_11.setFont(QtGui.QFont('SansSerif', 28))
-        self.ui.label_12.setText(lab8)
-        self.ui.label_12.setFont(QtGui.QFont('SansSerif', 28))
-        self.ui.label_8.setText(lab9)
-        self.ui.label_8.setFont(QtGui.QFont('SansSerif', 28))
-        self.figure, self.grath = plt.subplots()
-        self.canvas = FigureCanvas(self.figure)
-        self.scene = QGraphicsScene(self)
-        self.scene.addWidget(self.canvas)
-        self.ui.graphicsView.setScene(self.scene)
-        self.figure, self.grath1 = plt.subplots()
-        self.canvas1 = FigureCanvas(self.figure)
-        self.scene1 = QGraphicsScene(self)
-        self.scene1.addWidget(self.canvas1)
-        self.ui.graphicsView_2.setScene(self.scene1)
-        self.window_length = 100
-        self.current_position = 0
-        self.window_length2 = 100
-        self.current_position2 = 0
 
-        self.load_data('New100.TXT')
-        self.ui.horizontalSlider_2.setMinimum(0)
-        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - self.window_length)
-        self.ui.horizontalSlider_2.setValue(self.current_position)
-        self.ui.horizontalSlider_2.valueChanged.connect(self.update_plot)
-        self.ui.horizontalSlider.setMinimum(1)
-        self.ui.horizontalSlider.setMaximum(len(self.znach))
-        self.ui.horizontalSlider.setValue(self.window_length)
-        self.ui.horizontalSlider_3.setMinimum(1)
-        self.ui.horizontalSlider_3.setMaximum(500)
-        self.ui.horizontalSlider_3.setValue(20)
-        self.ui.horizontalSlider_5.setMinimum(0)
-        self.ui.horizontalSlider_5.setMaximum(800 - 1 - self.window_length2)
-        self.ui.horizontalSlider_5.setValue(self.current_position2)
-        self.ui.horizontalSlider_5.valueChanged.connect(self.update_plot)
-        self.ui.horizontalSlider_4.setMinimum(1)
-        self.ui.horizontalSlider_4.setMaximum(800)
-        self.ui.horizontalSlider_4.setValue(self.window_length2)
-        self.ui.horizontalSlider_6.setMinimum(1)
-        self.ui.horizontalSlider_6.setMaximum(500)
-        self.ui.horizontalSlider_6.setValue(20)
-
-
-        self.ui.horizontalSlider_2.valueChanged.connect(self.update_plot)
-        self.ui.horizontalSlider.valueChanged.connect(self.update_window_length)
-        self.ui.horizontalSlider_3.valueChanged.connect(self.update_height)
-        self.ui.horizontalSlider_5.valueChanged.connect(self.update_plot2)
-        self.ui.horizontalSlider_4.valueChanged.connect(self.update_window_length2)
-        self.ui.horizontalSlider_6.valueChanged.connect(self.update_height2)
-        self.update_plot()
-        self.update_plot2()
-
-
-
-    def load_data(self, filename):
-        self.znach = pd.read_csv(filename, header=None)
-        self.znach.columns = ['ECG']
-        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - 100)
-
-    def update_plot(self):
-        self.current_position = self.ui.horizontalSlider_2.value()
-        start = self.current_position
-        end = start + self.window_length
-        height = self.ui.horizontalSlider_3.value()
-        self.grath.clear()
-        self.grath.plot(self.znach['ECG'][start:end])
-        self.grath.set_title("График ЭКГ")
-        self.grath.set_xlabel("Время")
-        self.grath.set_ylabel("Амплитуда")
-        y_min = min(self.znach['ECG'][start:end]) - height // 2
-        y_max = max(self.znach['ECG'][start:end]) + height // 2
-        self.grath.set_ylim(y_min, y_max)
-
-        self.canvas.draw()
-
-    def update_window_length(self):
-        self.window_length = self.ui.horizontalSlider.value()
-        self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - self.window_length)
-        self.update_plot()
-
-    def update_height(self):
-        self.update_plot()
-
-
-    def update_plot2(self):
-        rr_intervals_ms = [interval * 1000 for interval in rr_intervals]
-        self.znach1 = rr_intervals_ms
-        self.ui.horizontalSlider_5.setMaximum(len(self.znach1) - 1 - 100)
-        self.current_position2 = self.ui.horizontalSlider_5.value()
-        start = self.current_position2
-        end = start + self.window_length2
-        height = self.ui.horizontalSlider_6.value()
-        self.grath1.clear()
-        self.grath1.plot(self.znach1[start:end])
-        self.grath1.set_title("График RR-интервалов")
-        self.grath1.set_xlabel("Номер RR-интервала")
-        self.grath1.set_ylabel("RR-интервал, мс")
-        y_min = min(self.znach1[start:end]) - height // 2
-        y_max = max(self.znach1[start:end]) + height // 2
-        self.grath1.set_ylim(y_min, y_max)
-
-        self.canvas1.draw()
-
-    def update_window_length2(self):
-        self.window_length2 = self.ui.horizontalSlider_4.value()
-        self.ui.horizontalSlider_5.setMaximum(len(self.znach1) - 1 - self.window_length2)
-        self.update_plot2()
-
-    def update_height2(self):
-        self.update_plot2()
 
 
 
