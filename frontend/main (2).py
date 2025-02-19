@@ -18,9 +18,7 @@ import neurokit2 as nk
 from design_and_soft import Ui_MainWindow
 import math
 from typing import List
-import numpy as np
-import matplotlib.pyplot as plt
-import neurokit2 as nk
+
 a  = input()
 class MyWidget(QMainWindow, Ui_MainWindow):
     def __init__(self,*args, **kwargs):
