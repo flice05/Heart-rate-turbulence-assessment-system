@@ -205,8 +205,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label_13.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\">Позиций окна</p></body></html>"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Анализ ЭКГ"))
+        self.label_13.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\">Позиция окна</p></body></html>"))
         self.p2.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"> Длина окна:</p></body></html>"))
         self.p3.setText(_translate("MainWindow", "<html><head/><body><p align=\"center\"> Высота скользящего окна</p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Tab), _translate("MainWindow", "ЭКГ"))
