@@ -15,7 +15,7 @@ import pandas as pd
 import numpy as np
 import neurokit2 as nk
 
-from MTUCI1111 import Ui_MainWindow
+from design_and_soft import Ui_MainWindow
 import math
 from typing import List
 import numpy as np
