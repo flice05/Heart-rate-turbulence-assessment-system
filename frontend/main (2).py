@@ -19,7 +19,7 @@ from design_and_soft import Ui_MainWindow
 import math
 from typing import List
 
-a  = input()
+a  = input("Укажите путь к  txt файлу: ")
 class MyWidget(QMainWindow, Ui_MainWindow):
     def __init__(self,*args, **kwargs):
         super(MyWidget, self).__init__(*args, **kwargs)
