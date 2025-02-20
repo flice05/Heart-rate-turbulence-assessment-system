@@ -1,7 +1,6 @@
 import sys
 import matplotlib
 
-
 matplotlib.use('QtAgg')
 
 from PyQt6.QtWidgets import QApplication, QMainWindow
@@ -19,7 +18,32 @@ from design_and_soft import Ui_MainWindow
 import math
 from typing import List
 
-a  = input("Укажите путь к txt файлу (например, файл test.txt): ")
+print()
+print(r"""███████╗░█████╗░░██████╗░    ██████╗░███████╗░█████╗░██████╗░███████╗██████╗░
+██╔════╝██╔══██╗██╔════╝░    ██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔════╝██╔══██╗
+█████╗░░██║░░╚═╝██║░░██╗░    ██████╔╝█████╗░░███████║██║░░██║█████╗░░██████╔╝
+██╔══╝░░██║░░██╗██║░░╚██╗    ██╔══██╗██╔══╝░░██╔══██║██║░░██║██╔══╝░░██╔══██╗
+███████╗╚█████╔╝╚██████╔╝    ██║░░██║███████╗██║░░██║██████╔╝███████╗██║░░██║
+╚══════╝░╚════╝░░╚═════╝░    ╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝╚═════╝░╚══════╝╚═╝░░╚═╝
+      """)
+
+print("Программа для анализа ЭКГ")
+print("--------------------")
+print()
+
+ecg_data = []
+a = ""
+
+while len(ecg_data) == 0:
+    try:
+        a = input("Укажите путь к txt файлу (например, файл test.txt): ")
+        ecg_data = np.loadtxt(a, skiprows=2)
+    except:
+        print("Ошибка!")
+
+print()
+print("Загрузка графического интерфейса................")
+
 class MyWidget(QMainWindow, Ui_MainWindow):
     def __init__(self,*args, **kwargs):
         super(MyWidget, self).__init__(*args, **kwargs)
@@ -339,7 +363,6 @@ def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):
 
     return average_to, average_ts
 
-ecg_data = np.loadtxt(a, skiprows=2)
 sampling_rate = 100
 filtered_ecg = nk.signal_filter(ecg_data, sampling_rate, low_freq, high_freq, "butterworth", 5)
 
