@@ -25,18 +25,20 @@ class MyWidget1(QMainWindow, Ui_MainWindow1):
         super(MyWidget1, self).__init__(*args, **kwargs)
         self.ui = Ui_MainWindow1()
         self.setupUi(self)
-        self.ok_button_start.clicked.connect(self.open)
+        self.ok_button_start.clicked.connect(self.open2)
 
-    def open(self):
+    def open2(self):
         way0 = QtCore.QStandardPaths.standardLocations(
         QtCore.QStandardPaths.StandardLocation.DocumentsLocation)[0]
         way, _ = QtWidgets.QFileDialog.getOpenFileName(
                 None, 'Open Text File', way0, "Text Files (*.txt);;All Files (*)")
         print("Загрузка................")
-        self.sub_window =mainn(way)
+        chislo = int(self.lineEdit.text())
+        chislo1 = int(self.lineEdit_2.text())
+        self.sub_window =mainn(way,chislo,chislo1)
 
 
-def mainn(way):
+def mainn(way,chislo,chislo1):
     class MyWidget(QMainWindow, Ui_MainWindow):
         def __init__(self,*args, **kwargs):
             super(MyWidget, self).__init__(*args, **kwargs)
@@ -173,8 +175,8 @@ def mainn(way):
             self.update_plot2()
 
 
-    low_freq = 5
-    high_freq = 20
+    low_freq = chislo
+    high_freq = chislo1
 
 
     def calculate_sdrr(rr_intervals_):
