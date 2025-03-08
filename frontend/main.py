@@ -25,9 +25,9 @@ class MyWidget1(QMainWindow, Ui_MainWindow1):
         super(MyWidget1, self).__init__(*args, **kwargs)
         self.ui = Ui_MainWindow1()
         self.setupUi(self)
-        self.ok_button_start.clicked.connect(self.open2)
+        self.ok_button_start.clicked.connect(self.open)
 
-    def open2(self):
+    def open(self):
         way0 = QtCore.QStandardPaths.standardLocations(
         QtCore.QStandardPaths.StandardLocation.DocumentsLocation)[0]
         way, _ = QtWidgets.QFileDialog.getOpenFileName(
