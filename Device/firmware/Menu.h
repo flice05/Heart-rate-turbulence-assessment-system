@@ -1,4 +1,5 @@
 #include "Bitmaps.h"
+#include "uRTCLib.h"
 
 #ifndef Menu_h
 #define Menu_h
@@ -8,7 +9,7 @@ class Menu
   public:
     byte currentPos = 1;
     bool isActive = true;
-    Menu(Config& config, GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oledRef) :config(config),  oled(oledRef)
+    Menu(Config& config, GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oledRef, uRTCLib &rtc) :config(config),  oled(oledRef), rtc(rtc)
     {
     }
 
@@ -17,12 +18,19 @@ class Menu
       switch (currentPos) 
       {
         case 1:
+            rtc.refresh();
             oled.clear();
             oled.home();
             oled.setScale(3);
-            oled.println("Холтер");
+            //oled.println("Холтер");
+            oled.print(rtc.hour());
+            oled.print(':');
+            oled.println(rtc.minute());
+            //oled.print(':');
+            //oled.println(rtc.second());
+
             oled.setScale(2);
-            oled.println("v1.0");
+            oled.println("Холтер v1.1");
             oled.setScale(1);
             oled.println("--------------------------");
             
@@ -86,6 +94,7 @@ class Menu
   private:
     Config& config;
     GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> &oled;
+    uRTCLib &rtc;
     byte widgetsCount = 3;
 
 };

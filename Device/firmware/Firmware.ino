@@ -7,27 +7,34 @@
 #include "button.h"
 #include "ECGApp.h"
 #include "Bitmaps.h"
+#include "uRTCLib.h"
 
 #define leftKeyPin 6
 #define rightKeyPin 9
 #define goKeyPin 8
 #define powerKeyPin 5
-//#define chipSelect 10
+//#define chipSelect 4
+
+char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 button leftKey(leftKeyPin);
 button rightKey(rightKeyPin);
 button goKey(goKeyPin);
 button powerKey(powerKeyPin);
 Config config;
+uRTCLib rtc(0x68);
 GyverOLED<SSD1306_128x64, OLED_NO_BUFFER> oled;
 File myFile;   
-Menu menu(config, oled);
+Menu menu(config, oled, rtc);
 ECGApp ecgApp(config, leftKey, rightKey, goKey, oled, myFile, menu);
 
 bool deviceOn = true;
+unsigned long menuTimer = millis();
 
 void setup()
 {
+  URTCLIB_WIRE.begin();
+  //rtc.set(0, 18, 22, 4, 19, 3, 2025);
   while(!powerKey.click()){}
   
   //pinMode(SS, OUTPUT);
@@ -56,6 +63,12 @@ void loop()
     //menu mode
     if(menu.isActive)
     {
+      if(menu.GetCurrentWidgetID() == 1 && millis() - menuTimer > 30000)
+      {
+        menu.DrawCurrentWidget();
+        menuTimer = millis();
+      }
+      
       if(leftKey.click())
       {
         menu.Left();

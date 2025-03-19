@@ -20,7 +20,7 @@ class ECGApp
         oled.home();
         oled.println("Поиск SD карты...");
         oled.println("[>]Не сохранять на SD");
-        while (!SD.begin(SPI_HALF_SPEED, 10)) 
+        while (!SD.begin(SPI_HALF_SPEED, 4)) 
         {
           if(rightKey.click()){break;}
         }
@@ -124,7 +124,7 @@ class ECGApp
           oled.setScale(1);
           oled.setCursor(0, 6);
           oled.print("Поиск SD. [v]-отмена");
-          while (!SD.begin(SPI_HALF_SPEED, 10)) 
+          while (!SD.begin(SPI_HALF_SPEED, 4)) 
           {
             if(goKey.click())
             {
