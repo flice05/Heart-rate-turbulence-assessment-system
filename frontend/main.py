@@ -4,10 +4,10 @@ import matplotlib
 
 matplotlib.use('QtAgg')
 
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtWidgets import QMainWindow, QGraphicsScene
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QMainWindow, QGraphicsScene, QMessageBox
 from PyQt6 import QtCore, QtWidgets, QtGui
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from PyQt6.QtCore import QStandardPaths
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
@@ -28,14 +28,19 @@ class MyWidget1(QMainWindow, Ui_MainWindow1):
         self.ok_button_start.clicked.connect(self.open2)
 
     def open2(self):
-        way0 = QtCore.QStandardPaths.standardLocations(
-        QtCore.QStandardPaths.StandardLocation.DocumentsLocation)[0]
+        w0 = QStandardPaths.standardLocations(QStandardPaths.StandardLocation.DocumentsLocation)[0]
         way, _ = QtWidgets.QFileDialog.getOpenFileName(
-                None, 'Open Text File', way0, "Text Files (*.txt);;All Files (*)")
-        print("Загрузка................")
-        chislo = int(self.lineEdit.text())
-        chislo1 = int(self.lineEdit_2.text())
-        self.sub_window =mainn(way,chislo,chislo1)
+            self, 'Open Text File', w0, "Text Files (*.txt);;All Files (*)"
+        )
+        if way and (way.endswith('.txt') or way.endswith('.TXT')):
+            print("Загрузка................")
+            chislo = int(self.lineEdit.text())
+            chislo1 = int(self.lineEdit_2.text())
+            self.sub_window = mainn(way, chislo, chislo1)
+            self.sub_window.show()
+        else:
+            self.ok_button_start.setText("Выберите другой файл")
+            QMessageBox.warning(self, "Неверный файл", "Пожалуйста, выберите файл с расширением .txt или .TXT")
 
 
 def mainn(way,chislo,chislo1):
@@ -45,23 +50,32 @@ def mainn(way,chislo,chislo1):
             self.ui = Ui_MainWindow()
             self.ui.setupUi(self)
             self.ui.label_7.setText(lab1)
-            self.ui.label_7.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label_7.setFont(QtGui.QFont('Montserrat', 16))
+            self.ui.label_7.setStyleSheet("font-weight: bold")
             self.ui.label_2.setText(lab2)
-            self.ui.label_2.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label_2.setFont(QtGui.QFont('Georgia', 16))
+            self.ui.label_2.setStyleSheet("font-weight: bold")
             self.ui.label_3.setText(lab3)
-            self.ui.label_3.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label_3.setFont(QtGui.QFont('Verdana', 16))
+            self.ui.label_3.setStyleSheet("font-weight: bold")
             self.ui.label.setText(lab4)
-            self.ui.label.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label.setFont(QtGui.QFont('SansSerif', 16))
+            self.ui.label.setStyleSheet("font-weight: bold")
             self.ui.label_10.setText(lab5)
-            self.ui.label_10.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label_10.setFont(QtGui.QFont('SansSerif', 16))
+            self.ui.label_10.setStyleSheet("font-weight: bold")
             self.ui.label_9.setText(lab6)
-            self.ui.label_9.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label_9.setFont(QtGui.QFont('SansSerif', 16))
+            self.ui.label_9.setStyleSheet("font-weight: bold")
             self.ui.label_11.setText(lab7)
-            self.ui.label_11.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label_11.setFont(QtGui.QFont('SansSerif', 16))
+            self.ui.label_11.setStyleSheet("font-weight: bold")
             self.ui.label_12.setText(lab8)
-            self.ui.label_12.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label_12.setFont(QtGui.QFont('SansSerif', 16))
+            self.ui.label_12.setStyleSheet("font-weight: bold")
             self.ui.label_8.setText(lab9)
-            self.ui.label_8.setFont(QtGui.QFont('SansSerif', 28))
+            self.ui.label_8.setFont(QtGui.QFont('SansSerif', 16))
+            self.ui.label_8.setStyleSheet("font-weight: bold")
 
             self.load_data(way)
             self.figure, self.grath = plt.subplots()
@@ -437,7 +451,7 @@ def mainn(way,chislo,chislo1):
     if average_slope == 0:
         lab6 = (f"Средний TS: не обнаружено")
     else:
-        lab6 = (f"Средний TO: {average_slope}")
+        lab6 = (f"Средний TS: {average_slope}")
     lab7 = (f"Количество ЖЭ: {count_}")
     if count_ == 0:
         lab8 = ("Ритм сердца нормальный. Нарушений не выявлено")
