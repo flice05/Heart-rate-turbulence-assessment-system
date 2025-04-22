@@ -28,19 +28,14 @@ class MyWidget1(QMainWindow, Ui_MainWindow1):
         self.ok_button_start.clicked.connect(self.open2)
 
     def open2(self):
-        w0 = QStandardPaths.standardLocations(QStandardPaths.StandardLocation.DocumentsLocation)[0]
+        way0 = QtCore.QStandardPaths.standardLocations(
+            QtCore.QStandardPaths.StandardLocation.DocumentsLocation)[0]
         way, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, 'Open Text File', w0, "Text Files (*.txt);;All Files (*)"
-        )
-        if way and (way.endswith('.txt') or way.endswith('.TXT')):
-            print("Загрузка................")
-            chislo = int(self.lineEdit.text())
-            chislo1 = int(self.lineEdit_2.text())
-            self.sub_window = mainn(way, chislo, chislo1)
-            self.sub_window.show()
-        else:
-            self.ok_button_start.setText("Выберите другой файл")
-            QMessageBox.warning(self, "Неверный файл", "Пожалуйста, выберите файл с расширением .txt или .TXT")
+            None, 'Open Text File', way0, "Text Files (*.txt);;All Files (*)")
+        print("Загрузка................")
+        chislo = int(self.lineEdit.text())
+        chislo1 = int(self.lineEdit_2.text())
+        self.sub_window = mainn(way, chislo, chislo1)
 
 
 def mainn(way,chislo,chislo1):
