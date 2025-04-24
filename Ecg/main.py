@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import neurokit2 as nk
 
-low_freq = 5
+low_freq = 8
 high_freq = 20
 
 
@@ -207,7 +207,7 @@ def analyz_heart_rate_turbulence(rr_intervals_array, pvc_rr_intervals):
     return average_to, average_ts
 
 
-ecg_data = np.loadtxt('Dataset/New100.TXT', skiprows=2)
+ecg_data = np.loadtxt('../Dataset/ecg_new.TXT', skiprows=2)
 
 sampling_rate = 100
 filtered_ecg = nk.signal_filter(ecg_data, sampling_rate, low_freq, high_freq, "butterworth", 5)
@@ -252,6 +252,7 @@ print(f"Количесвто RR интервалов: {len(rr_intervals)}")
         
     
 extrasystols = find_extrasystols(q_peaks=q_peaks_indexes,
+                                 r_peaks=r_peaks_indexes,
                                  s_peaks=s_peaks_indexes,
                                  rr_intervals=rr_intervals)
 

@@ -130,7 +130,7 @@ def mainn(way,chislo,chislo1):
 
 
         def load_data(self, filename):
-            self.znach = np.loadtxt(filename, skiprows=2)
+            self.znach = np.loadtxt(filename, skiprows=300)
             self.znach = nk.signal_filter(self.znach, sampling_rate, low_freq, high_freq, "butterworth", 5)
             self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - 100)
 
@@ -161,7 +161,7 @@ def mainn(way,chislo,chislo1):
 
 
         def update_plot2(self):
-            rr_intervals_ms = [interval * 1000 for interval in rr_intervals]
+            rr_intervals_ms = [interval for interval in rr_intervals]
             self.znach1 = rr_intervals_ms
             self.ui.horizontalSlider_5.setMaximum(800 - 1 - self.window_length2)
             self.current_position2 = self.ui.horizontalSlider_5.value()
@@ -374,7 +374,7 @@ def mainn(way,chislo,chislo1):
 
         return average_to, average_ts
 
-    ecg_data = np.loadtxt(way, skiprows=2)
+    ecg_data = np.loadtxt(way, skiprows=300)
     sampling_rate = 100
     filtered_ecg = nk.signal_filter(ecg_data, sampling_rate, low_freq, high_freq, "butterworth", 5)
 
