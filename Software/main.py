@@ -130,8 +130,8 @@ def mainn(way,chislo,chislo1):
 
 
         def load_data(self, filename):
-            self.znach = pd.read_csv(filename, header=None)
-            self.znach.columns = ['ECG']
+            self.znach = np.loadtxt(filename, skiprows=2)
+            self.znach = nk.signal_filter(self.znach, sampling_rate, low_freq, high_freq, "butterworth", 5)
             self.ui.horizontalSlider_2.setMaximum(len(self.znach) - 1 - 100)
 
 
@@ -147,8 +147,8 @@ def mainn(way,chislo,chislo1):
             self.grath.set_title("График ЭКГ")
             self.grath.set_xlabel("Время")
             self.grath.set_ylabel("Амплитуда")
-            y_min = min(self.znach['ECG'][start:end]) - height // 2
-            y_max = max(self.znach['ECG'][start:end]) + height // 2
+            y_min = min(self.znach[start:end]) - height // 2
+            y_max = max(self.znach[start:end]) + height // 2
             self.grath.set_ylim(y_min, y_max)
             self.canvas.draw()
 
@@ -189,7 +189,7 @@ def mainn(way,chislo,chislo1):
 
 
     def calculate_sdrr(rr_intervals_):
-        rr_intervals_ = [i  for i in rr_intervals_]
+        rr_intervals_ = [i for i in rr_intervals_]
         std = np.std(rr_intervals_)
         return std
 
